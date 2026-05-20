@@ -97,3 +97,16 @@ class Message(Base):
 
     conversation = relationship("Conversation", back_populates="messages")
     expediteur = relationship("User")
+
+class Notification(Base):
+    __tablename__ = "notifications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    utilisateur_id = Column(Integer, ForeignKey("users.id"))
+    titre = Column(String, nullable=False)
+    contenu = Column(String, nullable=False)
+    lu = Column(Boolean, default=False)
+    lien = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    utilisateur = relationship("User")

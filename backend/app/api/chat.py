@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List, Dict
 from app.core.database import get_db, SessionLocal
 from app.api.auth import get_current_user
-from app.models.models import Conversation, Message, User, Annonce
+from app.models.models import Conversation, Message, User, Annonce, Notification
 from app.schemas.message import ConversationCreate, ConversationResponse, MessageCreate, MessageResponse
 import json
 
@@ -125,6 +125,21 @@ async def envoyer_message(
         conversation_id=conversation_id
     )
     db.add(message)
+    db.flush()
+
+    # Créer une notification pour le destinataire
+    destinataire_id = (
+        conversation.proprietaire_id
+        if current_user.id == conversation.locataire_id
+        else conversation.locataire_id
+    )
+    notification = Notification(
+        utilisateur_id=destinataire_id,
+        titre=f"Nouveau message de {current_user.nom}",
+        contenu=data.contenu[:50] + "..." if len(data.contenu) > 50 else data.contenu,
+        lien=f"/messages/{conversation_id}"
+    )
+    db.add(notification)
     db.commit()
     db.refresh(message)
 
@@ -159,6 +174,27 @@ async def websocket_chat(
                 conversation_id=conversation_id
             )
             db.add(message)
+            db.flush()
+
+            # Créer notification via WebSocket
+            conversation = db.query(Conversation).filter(
+                Conversation.id == conversation_id
+            ).first()
+            if conversation:
+                destinataire_id = (
+                    conversation.proprietaire_id
+                    if user_id == conversation.locataire_id
+                    else conversation.locataire_id
+                )
+                expediteur = db.query(User).filter(User.id == user_id).first()
+                notification = Notification(
+                    utilisateur_id=destinataire_id,
+                    titre=f"Nouveau message de {expediteur.nom if expediteur else 'Quelqu un'}",
+                    contenu=message_data["contenu"][:50] + "..." if len(message_data["contenu"]) > 50 else message_data["contenu"],
+                    lien=f"/messages/{conversation_id}"
+                )
+                db.add(notification)
+
             db.commit()
             db.refresh(message)
 
