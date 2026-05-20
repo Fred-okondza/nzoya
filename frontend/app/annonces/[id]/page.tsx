@@ -6,6 +6,7 @@ import api from "@/lib/api";
 import { Annonce } from "@/lib/types";
 import Navbar from "@/components/Navbar";
 import { useAuthStore } from "@/lib/store";
+import CarteWrapper from "@/components/CarteWrapper";
 
 export default function DetailAnnonce() {
   const { id } = useParams();
@@ -47,7 +48,6 @@ export default function DetailAnnonce() {
 
         {/* Galerie photos */}
         <div className="mb-6">
-          {/* Photo principale */}
           <div className="bg-gray-200 rounded-2xl h-72 flex items-center justify-center overflow-hidden mb-3">
             {annonce.photos.length > 0 ? (
               <img
@@ -60,7 +60,6 @@ export default function DetailAnnonce() {
             )}
           </div>
 
-          {/* Miniatures */}
           {annonce.photos.length > 1 && (
             <div className="flex gap-2 overflow-x-auto pb-2">
               {annonce.photos.map((photo, index) => (
@@ -83,7 +82,6 @@ export default function DetailAnnonce() {
             </div>
           )}
 
-          {/* Compteur photos */}
           {annonce.photos.length > 0 && (
             <p className="text-xs text-gray-400 mt-1">
               {photoActive + 1} / {annonce.photos.length} photo(s)
@@ -152,6 +150,29 @@ export default function DetailAnnonce() {
                 </div>
               ))}
             </div>
+
+            {/* Carte */}
+            {annonce.latitude && annonce.longitude && (
+              <div className="mt-6">
+                <h3 className="font-bold text-gray-800 mb-3">📍 Localisation</h3>
+                {annonce.adresse_complete && (
+                  <p className="text-sm text-gray-500 mb-3">
+                    {annonce.adresse_complete}
+                  </p>
+                )}
+                <CarteWrapper
+                  centre={[annonce.latitude, annonce.longitude]}
+                  zoom={15}
+                  hauteur="250px"
+                  markers={[{
+                    lat: annonce.latitude,
+                    lng: annonce.longitude,
+                    titre: annonce.titre,
+                    prix: annonce.prix
+                  }]}
+                />
+              </div>
+            )}
           </div>
 
           {/* Prix et contact */}

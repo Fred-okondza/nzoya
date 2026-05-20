@@ -27,6 +27,32 @@ export default function Annonces() {
     }
   };
 
+  const annoncesPresDesMoi = () => {
+    setLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { data } = await api.get("/annonces/proximite", {
+            params: {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              rayon_km: 5,
+            },
+          });
+          setAnnonces(data);
+        } catch (err) {
+          console.error(err);
+        } finally {
+          setLoading(false);
+        }
+      },
+      () => {
+        alert("Impossible d'accéder à votre position.");
+        setLoading(false);
+      }
+    );
+  };
+
   useEffect(() => {
     chargerAnnonces();
   }, []);
@@ -37,7 +63,7 @@ export default function Annonces() {
 
       {/* Filtres */}
       <section className="bg-white border-b px-8 py-4">
-        <div className="flex gap-3 max-w-4xl mx-auto">
+        <div className="flex flex-wrap gap-3 max-w-4xl mx-auto">
           <select
             value={ville}
             onChange={(e) => setVille(e.target.value)}
@@ -67,6 +93,13 @@ export default function Annonces() {
             className="px-6 py-2 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition"
           >
             Filtrer
+          </button>
+
+          <button
+            onClick={annoncesPresDesMoi}
+            className="px-6 py-2 border border-green-600 text-green-600 rounded-xl font-medium hover:bg-green-50 transition"
+          >
+            📍 Près de moi
           </button>
         </div>
       </section>

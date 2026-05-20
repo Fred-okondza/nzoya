@@ -8,6 +8,7 @@ from app.schemas.annonce import AnnonceUpdate, AnnonceResponse
 import cloudinary
 import cloudinary.uploader
 from app.core.config import settings
+import math
 
 # Configuration Cloudinary
 cloudinary.config(
@@ -17,6 +18,15 @@ cloudinary.config(
 )
 
 router = APIRouter(prefix="/annonces", tags=["Annonces"])
+
+# Formule Haversine
+def haversine(lat1, lon1, lat2, lon2):
+    R = 6371
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = math.sin(dlat/2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon/2)**2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+    return R * c
 
 # Lister les annonces avec filtres
 @router.get("/", response_model=List[AnnonceResponse])
@@ -54,6 +64,28 @@ async def lister_annonces(
         query = query.filter(Annonce.douche_interieure == douche_interieure)
 
     return query.order_by(Annonce.created_at.desc()).all()
+
+# Recherche par proximité
+@router.get("/proximite", response_model=List[AnnonceResponse])
+async def annonces_proximite(
+    latitude: float,
+    longitude: float,
+    rayon_km: float = 5.0,
+    db: Session = Depends(get_db)
+):
+    annonces = db.query(Annonce).filter(
+        Annonce.est_disponible == True,
+        Annonce.latitude != None,
+        Annonce.longitude != None
+    ).all()
+
+    resultats = []
+    for annonce in annonces:
+        distance = haversine(latitude, longitude, annonce.latitude, annonce.longitude)
+        if distance <= rayon_km:
+            resultats.append(annonce)
+
+    return resultats
 
 # Voir une annonce
 @router.get("/{annonce_id}", response_model=AnnonceResponse)
