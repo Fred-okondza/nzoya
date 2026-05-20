@@ -33,6 +33,8 @@ class Annonce(Base):
     prix = Column(Float, nullable=False)
     ville = Column(String, nullable=False)
     quartier = Column(String, nullable=True)
+    ruelle = Column(String, nullable=True)
+    adresse_complete = Column(String, nullable=True)
     type_logement = Column(String, nullable=False)
     nb_chambres = Column(Integer, nullable=False)
     est_disponible = Column(Boolean, default=True)

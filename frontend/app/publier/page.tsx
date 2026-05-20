@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import Navbar from "@/components/Navbar";
+import CarteWrapper from "@/components/CarteWrapper";
 
 export default function Publier() {
   const router = useRouter();
@@ -12,14 +13,21 @@ export default function Publier() {
   const [loading, setLoading] = useState(false);
   const [erreur, setErreur] = useState("");
   const [photos, setPhotos] = useState<FileList | null>(null);
+  const [localisationLoading, setLocalisationLoading] = useState(false);
+  const [localisationMessage, setLocalisationMessage] = useState("");
+  const [centreCarte, setCentreCarte] = useState<[number, number]>([-4.2634, 15.2429]);
   const [form, setForm] = useState({
     titre: "",
     description: "",
     prix: "",
     ville: "",
     quartier: "",
+    ruelle: "",
+    adresse_complete: "",
     type_logement: "",
     nb_chambres: "",
+    latitude: "",
+    longitude: "",
     toilette_interieure: false,
     douche_interieure: false,
     cuisine_interieure: false,
@@ -32,7 +40,6 @@ export default function Publier() {
     gardien: false,
   });
 
-  // Protection de la route
   useEffect(() => {
     if (!token) {
       router.push("/auth/connexion");
@@ -76,6 +83,40 @@ export default function Publier() {
       setErreur(err.response?.data?.detail || "Une erreur est survenue");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const localiserAdresse = async () => {
+    if (!form.ville && !form.quartier) {
+      alert("Veuillez d'abord saisir la ville et le quartier");
+      return;
+    }
+    setLocalisationLoading(true);
+    setLocalisationMessage("");
+    try {
+      const adresse = `${form.ruelle || ""} ${form.quartier || ""} ${form.ville} Congo`.trim();
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(adresse)}&format=json&limit=1`,
+        { headers: { "Accept-Language": "fr" } }
+      );
+      const data = await response.json();
+      if (data.length > 0) {
+        const { lat, lon, display_name } = data[0];
+        setCentreCarte([parseFloat(lat), parseFloat(lon)]);
+        setForm({
+          ...form,
+          latitude: lat,
+          longitude: lon,
+          adresse_complete: display_name,
+        });
+        setLocalisationMessage("✅ Adresse trouvée ! Ajustez le marqueur si besoin.");
+      } else {
+        setLocalisationMessage("⚠️ Adresse non trouvée. Pointez manuellement sur la carte.");
+      }
+    } catch {
+      setLocalisationMessage("⚠️ Erreur de géocodage. Pointez manuellement.");
+    } finally {
+      setLocalisationLoading(false);
     }
   };
 
@@ -200,6 +241,20 @@ export default function Publier() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
+                Ruelle / Avenue
+              </label>
+              <input
+                type="text"
+                name="ruelle"
+                value={form.ruelle}
+                onChange={handleChange}
+                placeholder="Ex: Avenue de la Paix"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Type de logement
               </label>
               <select
@@ -249,6 +304,52 @@ export default function Publier() {
                 </label>
               ))}
             </div>
+          </div>
+
+          {/* Localisation */}
+          <div className="bg-white rounded-2xl p-6 shadow-sm">
+            <h2 className="font-bold text-gray-700 mb-2">📍 Localisation</h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Entrez le quartier et la ruelle puis cliquez sur "Localiser" ou pointez directement sur la carte.
+            </p>
+
+            <button
+              type="button"
+              onClick={localiserAdresse}
+              disabled={localisationLoading}
+              className="w-full py-3 border border-green-600 text-green-600 rounded-xl font-medium hover:bg-green-50 transition mb-4 disabled:opacity-50"
+            >
+              {localisationLoading ? "Recherche en cours..." : "🔍 Localiser automatiquement"}
+            </button>
+
+            {localisationMessage && (
+              <p className="text-sm mb-3 text-gray-600">{localisationMessage}</p>
+            )}
+
+            <CarteWrapper
+              centre={centreCarte}
+              zoom={14}
+              hauteur="300px"
+              markers={
+                form.latitude && form.longitude
+                  ? [{ lat: Number(form.latitude), lng: Number(form.longitude) }]
+                  : []
+              }
+              onClic={(lat, lng) => {
+                setForm({
+                  ...form,
+                  latitude: String(lat),
+                  longitude: String(lng),
+                });
+                setLocalisationMessage("✅ Position sélectionnée manuellement.");
+              }}
+            />
+            {form.latitude && form.longitude && (
+              <p className="text-xs text-green-600 mt-2">
+                ✅ Position : {Number(form.latitude).toFixed(4)},{" "}
+                {Number(form.longitude).toFixed(4)}
+              </p>
+            )}
           </div>
 
           {/* Photos */}

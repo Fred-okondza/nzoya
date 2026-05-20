@@ -72,6 +72,8 @@ async def creer_annonce(
     prix: float = Form(...),
     ville: str = Form(...),
     quartier: Optional[str] = Form(None),
+    ruelle: Optional[str] = Form(None),
+    adresse_complete: Optional[str] = Form(None),
     type_logement: str = Form(...),
     nb_chambres: int = Form(...),
     toilette_interieure: bool = Form(False),
@@ -89,20 +91,20 @@ async def creer_annonce(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    # Vérifier que c'est un propriétaire
     if current_user.role.value != "proprietaire":
         raise HTTPException(
             status_code=403,
             detail="Seuls les propriétaires peuvent publier des annonces"
         )
 
-    # Créer l'annonce
     nouvelle_annonce = Annonce(
         titre=titre,
         description=description,
         prix=prix,
         ville=ville,
         quartier=quartier,
+        ruelle=ruelle,
+        adresse_complete=adresse_complete,
         type_logement=type_logement,
         nb_chambres=nb_chambres,
         toilette_interieure=toilette_interieure,

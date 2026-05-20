@@ -9,6 +9,8 @@ class AnnonceBase(BaseModel):
     prix: float
     ville: str
     quartier: Optional[str] = None
+    ruelle: Optional[str] = None
+    adresse_complete: Optional[str] = None
     type_logement: str
     nb_chambres: int
     latitude: Optional[float] = None
@@ -41,6 +43,8 @@ class AnnonceUpdate(BaseModel):
     prix: Optional[float] = None
     ville: Optional[str] = None
     quartier: Optional[str] = None
+    ruelle: Optional[str] = None
+    adresse_complete: Optional[str] = None
     type_logement: Optional[str] = None
     nb_chambres: Optional[int] = None
     est_disponible: Optional[bool] = None
