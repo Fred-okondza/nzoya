@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Request
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from app.core.database import get_db
@@ -66,7 +66,6 @@ async def voir_annonce(annonce_id: int, db: Session = Depends(get_db)):
 # Créer une annonce
 @router.post("/", response_model=AnnonceResponse, status_code=201)
 async def creer_annonce(
-    request: Request,
     titre: str = Form(...),
     description: Optional[str] = Form(None),
     prix: float = Form(...),
@@ -88,6 +87,7 @@ async def creer_annonce(
     gardien: bool = Form(False),
     latitude: Optional[float] = Form(None),
     longitude: Optional[float] = Form(None),
+    photos: Optional[List[UploadFile]] = File(None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -125,17 +125,20 @@ async def creer_annonce(
     db.flush()
 
     # Upload photos sur Cloudinary
-    form = await request.form()
-    photos = form.getlist("photos")
-    for photo in photos:
-        if isinstance(photo, UploadFile) and photo.filename:
-            contenu = await photo.read()
-            if len(contenu) > 0:
-                result = cloudinary.uploader.upload(
-                    contenu,
-                    folder="nzoya/annonces"
-                )
-                db.add(Photo(url=result["url"], annonce_id=nouvelle_annonce.id))
+    if photos:
+        for photo in photos:
+            if photo and photo.filename and photo.filename != "":
+                try:
+                    contenu = await photo.read()
+                    if len(contenu) > 0:
+                        result = cloudinary.uploader.upload(
+                            contenu,
+                            folder="nzoya/annonces"
+                        )
+                        db.add(Photo(url=result["url"], annonce_id=nouvelle_annonce.id))
+                        print(f"✅ Photo uploadée: {result['url']}")
+                except Exception as e:
+                    print(f"❌ Erreur upload photo: {e}")
 
     db.commit()
     db.refresh(nouvelle_annonce)

@@ -74,9 +74,7 @@ export default function Publier() {
         });
       }
 
-      await api.post("/annonces/", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      await api.post("/annonces/", formData);
 
       router.push("/annonces");
     } catch (err: any) {

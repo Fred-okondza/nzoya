@@ -13,6 +13,7 @@ export default function DetailAnnonce() {
   const { user } = useAuthStore();
   const [annonce, setAnnonce] = useState<Annonce | null>(null);
   const [loading, setLoading] = useState(true);
+  const [photoActive, setPhotoActive] = useState(0);
 
   useEffect(() => {
     const charger = async () => {
@@ -43,16 +44,50 @@ export default function DetailAnnonce() {
       <Navbar />
 
       <div className="max-w-4xl mx-auto px-8 py-8">
-        {/* Photos */}
-        <div className="bg-gray-200 rounded-2xl h-72 flex items-center justify-center mb-6 overflow-hidden">
-          {annonce.photos.length > 0 ? (
-            <img
-              src={annonce.photos[0].url}
-              alt={annonce.titre}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <span className="text-gray-400 text-6xl">🏠</span>
+
+        {/* Galerie photos */}
+        <div className="mb-6">
+          {/* Photo principale */}
+          <div className="bg-gray-200 rounded-2xl h-72 flex items-center justify-center overflow-hidden mb-3">
+            {annonce.photos.length > 0 ? (
+              <img
+                src={annonce.photos[photoActive].url}
+                alt={annonce.titre}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span className="text-gray-400 text-6xl">🏠</span>
+            )}
+          </div>
+
+          {/* Miniatures */}
+          {annonce.photos.length > 1 && (
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {annonce.photos.map((photo, index) => (
+                <button
+                  key={photo.id}
+                  onClick={() => setPhotoActive(index)}
+                  className={`flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition ${
+                    photoActive === index
+                      ? "border-green-600"
+                      : "border-transparent hover:border-gray-300"
+                  }`}
+                >
+                  <img
+                    src={photo.url}
+                    alt={`Photo ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Compteur photos */}
+          {annonce.photos.length > 0 && (
+            <p className="text-xs text-gray-400 mt-1">
+              {photoActive + 1} / {annonce.photos.length} photo(s)
+            </p>
           )}
         </div>
 
