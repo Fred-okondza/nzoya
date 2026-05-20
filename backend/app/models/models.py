@@ -18,6 +18,9 @@ class User(Base):
     mot_de_passe = Column(String, nullable=False)
     role = Column(Enum(UserRole), nullable=False)
     est_verifie = Column(Boolean, default=False)
+    token_verification = Column(String, nullable=True)
+    token_reset_password = Column(String, nullable=True)
+    token_reset_expire = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     annonces = relationship("Annonce", back_populates="proprietaire")

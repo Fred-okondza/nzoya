@@ -26,11 +26,9 @@ export default function Connexion() {
     setLoading(true);
     setErreur("");
     try {
-      // Connexion
       const { data } = await api.post("/auth/connexion", form);
       setToken(data.access_token);
 
-      // Récupérer le profil
       const { data: profil } = await api.get("/auth/profil", {
         headers: { Authorization: `Bearer ${data.access_token}` },
       });
@@ -47,7 +45,6 @@ export default function Connexion() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center px-4">
       <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md">
-        {/* Logo */}
         <Link href="/" className="block text-center text-2xl font-bold text-green-700 mb-6">
           NzoYa 🏠
         </Link>
@@ -59,10 +56,9 @@ export default function Connexion() {
           Connectez-vous à votre compte
         </p>
 
-        {/* Message succès inscription */}
         {searchParams.get("inscrit") && (
           <div className="bg-green-50 text-green-600 px-4 py-3 rounded-lg mb-4 text-sm">
-            ✅ Compte créé avec succès ! Connectez-vous.
+            ✅ Compte créé ! Vérifiez votre email avant de vous connecter.
           </div>
         )}
 
@@ -101,6 +97,15 @@ export default function Connexion() {
               placeholder="••••••••"
               className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
             />
+          </div>
+
+          <div className="text-right">
+            <Link
+              href="/auth/mot-de-passe-oublie"
+              className="text-sm text-green-600 hover:underline"
+            >
+              Mot de passe oublié ?
+            </Link>
           </div>
 
           <button

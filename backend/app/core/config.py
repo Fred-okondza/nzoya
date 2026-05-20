@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     CLOUDINARY_API_KEY: str
     CLOUDINARY_API_SECRET: str
 
+    # Resend
+    RESEND_API_KEY: str
+    FRONTEND_URL: str
+
     class Config:
         env_file = ".env"
 
