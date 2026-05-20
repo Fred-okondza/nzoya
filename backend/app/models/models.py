@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, DateTime, Enum
+from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, DateTime, Enum, Text
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.core.database import Base
@@ -21,6 +21,8 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     annonces = relationship("Annonce", back_populates="proprietaire")
+    conversations_locataire = relationship("Conversation", foreign_keys="Conversation.locataire_id", back_populates="locataire")
+    conversations_proprietaire = relationship("Conversation", foreign_keys="Conversation.proprietaire_id", back_populates="proprietaire")
 
 class Annonce(Base):
     __tablename__ = "annonces"
@@ -59,6 +61,7 @@ class Annonce(Base):
     proprietaire_id = Column(Integer, ForeignKey("users.id"))
     proprietaire = relationship("User", back_populates="annonces")
     photos = relationship("Photo", back_populates="annonce")
+    conversations = relationship("Conversation", back_populates="annonce")
 
 class Photo(Base):
     __tablename__ = "photos"
@@ -67,3 +70,30 @@ class Photo(Base):
     url = Column(String, nullable=False)
     annonce_id = Column(Integer, ForeignKey("annonces.id"))
     annonce = relationship("Annonce", back_populates="photos")
+
+class Conversation(Base):
+    __tablename__ = "conversations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    annonce_id = Column(Integer, ForeignKey("annonces.id"))
+    locataire_id = Column(Integer, ForeignKey("users.id"))
+    proprietaire_id = Column(Integer, ForeignKey("users.id"))
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    annonce = relationship("Annonce", back_populates="conversations")
+    locataire = relationship("User", foreign_keys=[locataire_id], back_populates="conversations_locataire")
+    proprietaire = relationship("User", foreign_keys=[proprietaire_id], back_populates="conversations_proprietaire")
+    messages = relationship("Message", back_populates="conversation")
+
+class Message(Base):
+    __tablename__ = "messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    contenu = Column(Text, nullable=False)
+    expediteur_id = Column(Integer, ForeignKey("users.id"))
+    conversation_id = Column(Integer, ForeignKey("conversations.id"))
+    created_at = Column(DateTime, default=datetime.utcnow)
+    lu = Column(Boolean, default=False)
+
+    conversation = relationship("Conversation", back_populates="messages")
+    expediteur = relationship("User")

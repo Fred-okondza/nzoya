@@ -5,10 +5,12 @@ import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { Annonce } from "@/lib/types";
 import Navbar from "@/components/Navbar";
+import { useAuthStore } from "@/lib/store";
 
 export default function DetailAnnonce() {
   const { id } = useParams();
   const router = useRouter();
+  const { user } = useAuthStore();
   const [annonce, setAnnonce] = useState<Annonce | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -128,7 +130,23 @@ export default function DetailAnnonce() {
               📞 Contacter le propriétaire
             </button>
 
-            <button className="w-full py-3 border border-green-600 text-green-600 rounded-xl font-semibold hover:bg-green-50 transition">
+            <button
+              onClick={async () => {
+                if (!user) {
+                  router.push("/auth/connexion");
+                  return;
+                }
+                try {
+                  const { data } = await api.post("/chat/conversations", {
+                    annonce_id: annonce.id,
+                  });
+                  router.push(`/messages/${data.id}`);
+                } catch (err: any) {
+                  alert(err.response?.data?.detail || "Erreur");
+                }
+              }}
+              className="w-full py-3 border border-green-600 text-green-600 rounded-xl font-semibold hover:bg-green-50 transition"
+            >
               💬 Envoyer un message
             </button>
 
