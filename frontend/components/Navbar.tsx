@@ -57,9 +57,12 @@ export default function Navbar() {
               >
                 💬 Messages
               </Link>
-              <span className="text-gray-600 text-sm">
+              <Link
+                href="/profil"
+                className="text-gray-600 text-sm hover:text-green-700 transition"
+              >
                 Bonjour, <span className="font-semibold text-green-700">{user.nom}</span>
-              </span>
+              </Link>
               <button
                 onClick={handleLogout}
                 className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg font-medium hover:bg-gray-50 transition"
@@ -99,9 +102,13 @@ export default function Navbar() {
         <div className="md:hidden border-t border-gray-100 px-4 py-4 flex flex-col gap-3">
           {user ? (
             <>
-              <p className="text-gray-600 text-sm">
+              <Link
+                href="/profil"
+                onClick={() => setMenuOuvert(false)}
+                className="text-gray-600 text-sm font-medium"
+              >
                 Bonjour, <span className="font-semibold text-green-700">{user.nom}</span>
-              </p>
+              </Link>
               {user.role === "proprietaire" && (
                 <Link
                   href="/publier"
@@ -117,6 +124,13 @@ export default function Navbar() {
                 className="px-4 py-3 border border-gray-200 text-gray-700 rounded-xl font-medium text-center"
               >
                 💬 Mes messages
+              </Link>
+              <Link
+                href="/profil"
+                onClick={() => setMenuOuvert(false)}
+                className="px-4 py-3 border border-gray-200 text-gray-700 rounded-xl font-medium text-center"
+              >
+                👤 Mon profil
               </Link>
               <button
                 onClick={handleLogout}
