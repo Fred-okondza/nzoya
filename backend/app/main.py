@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api import auth, annonces, chat, profil, notifications
+from app.api import auth, annonces, chat, profil, notifications, admin
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -23,6 +23,7 @@ app.include_router(annonces.router)
 app.include_router(chat.router)
 app.include_router(profil.router)
 app.include_router(notifications.router)
+app.include_router(admin.router)
 
 @app.get("/")
 async def root():

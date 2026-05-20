@@ -7,6 +7,7 @@ import enum
 class UserRole(enum.Enum):
     proprietaire = "proprietaire"
     locataire = "locataire"
+    admin = "admin"
 
 class User(Base):
     __tablename__ = "users"
@@ -18,6 +19,7 @@ class User(Base):
     mot_de_passe = Column(String, nullable=False)
     role = Column(Enum(UserRole), nullable=False)
     est_verifie = Column(Boolean, default=False)
+    est_suspendu = Column(Boolean, default=False)
     token_verification = Column(String, nullable=True)
     token_reset_password = Column(String, nullable=True)
     token_reset_expire = Column(DateTime, nullable=True)

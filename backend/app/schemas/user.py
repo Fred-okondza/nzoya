@@ -5,6 +5,7 @@ from datetime import datetime
 class UserRole(str, Enum):
     proprietaire = "proprietaire"
     locataire = "locataire"
+    admin = "admin"
 
 # Création d'un utilisateur
 class UserCreate(BaseModel):
@@ -27,6 +28,7 @@ class UserResponse(BaseModel):
     telephone: str | None
     role: UserRole
     est_verifie: bool
+    est_suspendu: bool = False
     created_at: datetime
 
     class Config:
